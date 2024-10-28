@@ -3,6 +3,11 @@
 .pin-ext-li-fader {
   display: none;
 }
+
+.draggable:hover {
+  cursor: pointer !important;
+}
+
 .pin-ext-li:hover div > div.pin-ext-li-fader {
   display: block;
 }

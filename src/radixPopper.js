@@ -50,10 +50,9 @@ window.addEventListener("load", function () {
           const conversationId = conversationUrl.split("c/").at(-1);
 
           // add to UI if data is not already in browser storage
+          const conversationList = document.querySelector("#pinned-list-ol");
           retrieveFromBrowserStorage([conversationId], (storage) => {
             if (!storage[conversationId]) {
-              const conversationList =
-                document.querySelector("#pinned-list-ol");
               const newListItem = buildListItems({
                 [conversationId]: { title: conversationTitle },
               }).at(0);
@@ -62,15 +61,15 @@ window.addEventListener("load", function () {
               closeButton.addEventListener("click", () =>
                 unpinConversation(closeButton, conversationId),
               );
-              conversationList.insertBefore(
-                newListItem,
-                conversationList.firstChild,
-              );
+              conversationList.appendChild(newListItem);
+
+              // store data in browser storage
+              storeInBrowserStorage(conversationId, {
+                title: conversationTitle,
+                order: conversationList.children.length,
+              });
             }
           });
-
-          // store data in browser storage
-          storeInBrowserStorage(conversationId, { title: conversationTitle });
 
           // remove the popup
           radixPopperWrapperInnerDiv.remove();

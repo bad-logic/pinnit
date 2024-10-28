@@ -12,7 +12,7 @@ window.addEventListener("load", function () {
         console.log("pinnedSectionHTML: ", pinnedSectionHTML);
         const pinnedSectionDiv = createElement({
           tag: "div",
-          attr: { class: "relative mt-5 first:mt-0 last:mb-5 custom" },
+          attrs: { class: "relative mt-5 first:mt-0 last:mb-5 custom-pinnit" },
           content: pinnedSectionHTML,
         });
 

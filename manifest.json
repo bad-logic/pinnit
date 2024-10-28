@@ -23,8 +23,8 @@
   "content_scripts": [
     {
       "matches": ["https://chatgpt.com/*"],
-      "js": ["utilities.js", "app.js", "radixPopper.js"],
-      "css": ["app.css"]
+      "js": ["src/utilities.js", "src/app.js", "src/radixPopper.js"],
+      "css": ["src/app.css"]
     }
   ]
 }

@@ -47,11 +47,75 @@ function buildPinnedSectionHTML(list = []) {
     attrs: { id: "pinned-list-ol" },
   });
   for (let li of list) {
+    makeDraggable(li, conversationList);
     conversationList.appendChild(li);
   }
   pinnedSection.append(conversationList);
   console.log(pinnedSection, "building section");
   return pinnedSection;
+}
+
+function updateOrderInStorage() {
+  // Get existing data from Chrome storage
+  chrome.storage.local.get(null, (items) => {
+    // Update each item with new order values from newOrderArray
+    const listEls = document.querySelectorAll(".pin-ext-li");
+    listEls.forEach((li, index) => {
+      const key = li.getAttribute("id");
+      items[key] = { ...items[key], order: index };
+    });
+
+    console.log("items", items);
+
+    // Save the updated items back to Chrome storage
+    chrome.storage.local.set(items, () => {
+      console.log("Order updated successfully!");
+    });
+  });
+}
+
+function makeDraggable(li, parent) {
+  li.setAttribute("draggable", true);
+
+  li.addEventListener("dragstart", (e) => {
+    // e.dataTransfer.setData('text/plain', li.id);
+    li.classList.add("dragging");
+  });
+
+  li.addEventListener("dragend", () => {
+    li.classList.remove("dragging");
+    updateOrderInStorage();
+  });
+
+  li.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    const afterElement = getDragAfterElement(parent, e.clientY);
+    const draggable = document.querySelector(".dragging");
+    if (afterElement == null) {
+      parent.appendChild(draggable);
+    } else {
+      parent.insertBefore(draggable, afterElement);
+    }
+  });
+}
+
+function getDragAfterElement(container, y) {
+  const draggableElements = [
+    ...container.querySelectorAll(".pin-ext-li:not(.dragging)"),
+  ];
+
+  return draggableElements.reduce(
+    (closest, child) => {
+      const box = child.getBoundingClientRect();
+      const offset = y - box.top - box.height / 2;
+      if (offset < 0 && offset > closest.offset) {
+        return { offset: offset, element: child };
+      } else {
+        return closest;
+      }
+    },
+    { offset: Number.NEGATIVE_INFINITY },
+  ).element;
 }
 
 function buildPinMenuItemHTML() {
@@ -78,13 +142,21 @@ function buildPinMenuItemHTML() {
 // build coversation lists
 function buildListItems(conversations) {
   const listItems = [];
+  const keys = Object.keys(conversations);
+  keys.sort(
+    (key1, key2) =>
+      (conversations[key1]?.order ?? Infinity) -
+      (conversations[key2]?.order ?? Infinity),
+  );
 
-  for (let key of Object.keys(conversations)) {
+  console.log("keys:", keys);
+
+  for (let key of keys) {
     const id = `${"pinnit-" + key}`;
 
     const listHtmlString = `
-        <li id=${key} class="pin-ext-li relative" pinned-data-id="history-item-0" style="height: auto;">
-            <div class="no-draggable group relative rounded-lg hover:bg-token-sidebar-surface-secondary">
+        <li id=${key} class="pin-ext-li relative z-[15]" style="height: auto;">
+            <div class="group relative rounded-lg hover:bg-token-sidebar-surface-secondary">
                 <a id="${id}" class="pin-ext-a flex items-center gap-2 p-2" data-discover="true" href="/c/${key}" >
                     <div class="relative grow overflow-hidden whitespace-nowrap">
                         ${conversations[key].title}
