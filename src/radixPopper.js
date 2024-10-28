@@ -56,6 +56,9 @@ window.addEventListener("load", function () {
               const newListItem = buildListItems({
                 [conversationId]: { title: conversationTitle },
               }).at(0);
+
+              makeDraggable(newListItem, conversationList);
+
               const closeButton =
                 newListItem.querySelector(".pin-ext-close-btn");
               closeButton.addEventListener("click", () =>
